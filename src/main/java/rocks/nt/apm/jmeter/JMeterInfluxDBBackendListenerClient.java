@@ -133,13 +133,11 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 						.addField(RequestMeasurement.Fields.NODE_NAME, nodeName)
 						.addField(RequestMeasurement.Fields.RESPONSE_TIME, sampleResult.getTime())
 						.addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode());
-				Point point = null;
-				if (!sampleResult.isSuccessful()) {
+				if (!sampleResult.isSuccessful() && sampleResult.getResponseMessage() != null) {
 					pointBuilder.addField(RequestMeasurement.Fields.RESPONSE_MESSAGE, sampleResult.getResponseMessage());
-					point = pointBuilder.build();
-				} else {
-					pointBuilder.build();
 				}
+
+				Point point = pointBuilder.build();
 				influxDB.write(influxDBConfig.getInfluxDatabase(), influxDBConfig.getInfluxRetentionPolicy(), point);
 			}
 		}
