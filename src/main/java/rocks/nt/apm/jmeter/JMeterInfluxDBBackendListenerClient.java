@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.jmeter.assertions.AssertionResult;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.threads.JMeterContextService;
@@ -135,6 +136,13 @@ public class JMeterInfluxDBBackendListenerClient extends AbstractBackendListener
 						.addField(RequestMeasurement.Fields.RESPONSE_CODE, sampleResult.getResponseCode());
 				if (!sampleResult.isSuccessful() && sampleResult.getResponseMessage() != null) {
 					pointBuilder.addField(RequestMeasurement.Fields.RESPONSE_MESSAGE, sampleResult.getResponseMessage());
+				}
+				AssertionResult[] assertionResults = sampleResult.getAssertionResults();
+				for (AssertionResult assertionResult: assertionResults) {
+					if (assertionResult.isError() || assertionResult.isFailure()) {
+						pointBuilder.addField(RequestMeasurement.Fields.RESPONSE_MESSAGE, assertionResult.getFailureMessage());
+						break;
+					}
 				}
 
 				Point point = pointBuilder.build();
